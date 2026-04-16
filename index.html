@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> puzzle</title>
+    <title>puzzle</title>
     <style>
         :root {
             --soft-pink-bg: #fff0f5;
@@ -12,7 +12,7 @@
             --soft-pink-dark: #ff69b4;
             --text-color: #d87093;
             --board-shadow: rgba(255, 182, 193, 0.5);
-            --grid-line: rgba(255, 255, 255, 0.6);
+            --grid-line: rgba(255, 255, 255, 0.7);
         }
 
         * {
@@ -35,93 +35,102 @@
             color: var(--text-color);
         }
 
-        /* --- STYLING BARIS ATAS (SKOR - JUDUL - PLAYLIST) --- */
+        /* --- STYLING BAR ATAS --- */
         #top-bar {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
             align-items: center;
-            width: 95vw;
-            max-width: 400px;
+            width: 90vw;
+            max-width: 380px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 25px;
             margin-bottom: 20px;
-            padding: 0 5px;
+            border: 2px solid white;
+            box-shadow: 0 4px 15px var(--board-shadow);
         }
 
-        .top-section {
-            flex: 1;
+        .top-item {
             display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
-        .top-left { justify-content: flex-start; }
-        .top-center { justify-content: center; align-items: center; }
-        .top-right { justify-content: flex-end; }
 
         #score-board {
-            font-size: 1.2rem;
-            font-weight: bold;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 8px 15px;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--soft-pink-dark);
+            background: white;
+            padding: 4px 10px;
             border-radius: 15px;
-            border: 2px solid white;
-            box-shadow: 0 4px 10px var(--board-shadow);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
         #level-board {
-            font-size: 1.1rem;
-            font-weight: bold;
+            font-size: 1rem;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            color: var(--text-color);
         }
 
+        /* --- PLAYLIST (TANPA IKON MUSIK) --- */
         #music-player {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 110px;
+        }
+
+        .music-info {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 5px 10px;
-            border-radius: 15px;
-            box-shadow: 0 2px 5px var(--board-shadow);
+            width: 100%;
+        }
+
+        .music-title-container {
+            width: 85px; /* Sedikit dilebarkan karena ikon dihapus */
+            margin-bottom: 3px;
+            text-align: center;
+        }
+
+        #track-name {
+            display: block;
+            font-size: 0.6rem;
+            color: var(--soft-pink-dark);
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .music-btns {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         #music-player button {
-            background: var(--soft-pink-dark);
+            background: var(--soft-pink-main);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 26px;
-            height: 26px;
-            font-size: 0.8rem;
+            width: 20px;
+            height: 20px;
+            font-size: 0.55rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
+            transition: background 0.2s, transform 0.1s;
         }
         
-        #music-player button:active {
-            transform: scale(0.9);
-        }
-
-        #track-name {
-            font-size: 0.65rem;
-            max-width: 60px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 3px;
-            color: var(--soft-pink-dark);
-            font-weight: bold;
-        }
+        #music-player button:hover { background: var(--soft-pink-dark); }
+        #music-player button:active { transform: scale(0.9); }
         /* ----------------------------------- */
 
+        /* --- GRID TETAP 8x8 --- */
         #game-board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -142,12 +151,14 @@
         .cell {
             background: rgba(255, 255, 255, 0.4);
             position: relative;
+            border-radius: 2px;
         }
 
         .cell.filled {
             background-size: 800% 800%;
             animation: popIn 0.3s ease-out;
             border: none;
+            border-radius: 0;
         }
 
         #spawn-area {
@@ -155,19 +166,20 @@
             justify-content: space-around;
             align-items: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 390px;
             margin-top: 25px;
             height: 100px;
         }
 
         .piece-container {
-            width: 90px;
-            height: 90px;
+            width: 80px; 
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            border: 1px dashed white;
         }
 
         .block-piece {
@@ -180,12 +192,13 @@
         }
 
         .block-unit {
-            width: 22px;
+            width: 22px; 
             height: 22px;
             background-color: var(--soft-pink-dark);
-            border: 1px solid rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.6);
             border-radius: 2px;
             pointer-events: none;
+            box-shadow: inset 0 0 5px rgba(255,255,255,0.3);
         }
 
         @keyframes popIn {
@@ -207,11 +220,11 @@
             text-align: center;
         }
 
-        .overlay h1 { font-size: 2.5rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .overlay h1 { font-size: 2.2rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
         
         .overlay button.main-btn {
-            padding: 15px 40px;
-            font-size: 1.2rem;
+            padding: 15px 35px;
+            font-size: 1.1rem;
             border: none;
             border-radius: 30px;
             background: white;
@@ -223,18 +236,15 @@
             transition: transform 0.2s;
             z-index: 2002;
         }
-        .overlay button.main-btn:active {
-            transform: scale(0.95);
-        }
+        .overlay button.main-btn:active { transform: scale(0.95); }
 
-        /* --- STYLING POLAROID BESAR DI LAYAR KEMENANGAN --- */
         #polaroid-card {
             background: white;
             padding: 15px 15px 50px 15px; 
             border-radius: 6px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.4);
             transform: rotate(-3deg);
-            max-width: 85vw;
+            max-width: 80vw;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -244,7 +254,7 @@
 
         #polaroid-img {
             width: 100%;
-            max-width: 320px; /* Ukuran gambar diperbesar */
+            max-width: 280px;
             height: auto;
             border: 1px solid #eee;
             aspect-ratio: 1 / 1;
@@ -254,14 +264,12 @@
         #polaroid-caption {
             color: #444;
             font-family: 'Segoe Print', 'Bradley Hand', cursive, sans-serif;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             margin-top: 15px;
             transform: rotate(2deg);
         }
-        /* ------------------------ */
 
-        /* --- EFEK CONFETTI LOVE PINK --- */
         .heart-confetti {
             position: fixed;
             top: -10vh;
@@ -274,7 +282,6 @@
             0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
             100% { transform: translateY(110vh) rotate(360deg) scale(0.5); opacity: 0; }
         }
-        /* ------------------------ */
     </style>
 </head>
 <body>
@@ -282,21 +289,26 @@
     <audio id="bgm"></audio>
 
     <div id="top-bar">
-        <div class="top-section top-left">
+        <div class="top-item">
             <div id="score-board">0%</div>
         </div>
         
-        <div class="top-section top-center">
-            <div id="level-board">puzzle ke-1</div>
+        <div class="top-item">
+            <div id="level-board">Puzzle 1</div>
         </div>
 
-        <div class="top-section top-right">
+        <div class="top-item">
             <div id="music-player">
-                <div class="music-btns">
-                    <button onclick="prevTrack()">&#9664;</button>
-                    <button onclick="nextTrack()">&#9654;</button>
+                <div class="music-info">
+                    <div class="music-title-container">
+                        <span id="track-name">Memuat...</span>
+                    </div>
+                    <div class="music-btns">
+                        <button onclick="prevTrack()" title="Sebelumnya">&#9664;</button>
+                        <button id="play-pause-btn" onclick="togglePlay()" title="Putar/Jeda">&#9654;</button>
+                        <button onclick="nextTrack()" title="Selanjutnya">&#9654;&#9654;</button>
+                    </div>
                 </div>
-                <div id="track-name">Memuat...</div>
             </div>
         </div>
     </div>
@@ -327,25 +339,46 @@
     </div>
 
     <script>
-        // --- SISTEM AUDIO & PLAYLIST ---
+        // --- AUDIO ---
         const bgm = document.getElementById('bgm');
         bgm.volume = 0.4;
         
-        // ---> GANTI LAGU ANDA DI SINI <---
         const playlist = [
-            { name: "bersenja gurau", url: "senja.mp3" }
+            { name: "PERFECT", url: "perfect.mp3" },
+            { name: "A THOUSAND", url: "ily.mp3" }
+            
         ];
         
         let currentTrack = 0;
         let isMusicStarted = false;
+        
         const trackNameEl = document.getElementById('track-name');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+
+        function updatePlayerUI() {
+            if (bgm.paused || !isMusicStarted) {
+                playPauseBtn.innerHTML = '&#9654;';
+            } else {
+                playPauseBtn.innerHTML = '&#10074;&#10074;';
+            }
+        }
+
+        function togglePlay() {
+            if (!isMusicStarted) {
+                isMusicStarted = true;
+                bgm.play().catch(e => console.log("Perlu interaksi"));
+            } else {
+                if (bgm.paused) bgm.play();
+                else bgm.pause();
+            }
+            updatePlayerUI();
+        }
 
         function loadTrack(index) {
             bgm.src = playlist[index].url;
             trackNameEl.innerText = playlist[index].name;
-            if (isMusicStarted) {
-                bgm.play().catch(e => console.log("Audio tertahan browser"));
-            }
+            if (isMusicStarted) bgm.play().catch(()=>{});
+            updatePlayerUI();
         }
 
         function nextTrack() {
@@ -363,7 +396,6 @@
         bgm.addEventListener('ended', nextTrack);
         loadTrack(0); 
 
-        // SFX Bawaan (Synthesizer)
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioCtx = new AudioContext();
 
@@ -391,7 +423,6 @@
             }
         };
 
-        // --- FUNGSI ANIMASI CONFETTI LOVE ---
         function shootConfetti() {
             const colors = ['#ffb6c1', '#ff69b4', '#ff1493', '#d87093', '#ffffff'];
             for (let i = 0; i < 70; i++) {
@@ -404,51 +435,43 @@
                 heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
                 heart.style.animationDelay = (Math.random() * 0.5) + 's';
                 document.body.appendChild(heart);
-                
-                // Hapus DOM setelah animasi selesai agar tidak memberatkan browser
                 setTimeout(() => heart.remove(), 5000);
             }
         }
-        // ------------------------------------
 
+        // --- GAME LOGIC ---
         const board = document.getElementById('game-board');
         const scoreEl = document.getElementById('score-board');
         const levelEl = document.getElementById('level-board');
-        const gridSize = 8;
-        let grid = Array(gridSize * gridSize).fill(0);
         
-        const photoUrls = [
-            '1.jpg',
-            '2.jpg',
-            '3.jpg',
-            '4.jpg',
-            '5.jpg'
-        ];
+        const gridSize = 8; 
+        const totalCells = gridSize * gridSize; 
+        let grid = Array(totalCells).fill(0);
+        
+        const photoUrls = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
         let currentPhotoIndex = 0;
         let blocksPlaced = 0;
 
-        const shapes = [
+        // BENTUK KECIL AGAR AUTO-MENANG (TIDAK MUNGKIN JALAN BUNTU)
+        const easyShapes = [
             [[0,0], [0,1], [1,0], [1,1]], // 2x2
-            [[0,0], [0,1], [0,2]],         // 3 Horiz
-            [[0,0], [1,0], [2,0]],         // 3 Vert
-            [[0,0], [1,0], [1,1]],         // L kecil
-            [[0,0], [0,1]],                // 2 Horiz
-            [[0,0], [1,0]],                // 2 Vert
-            [[0,0]]                        // 1 dot
+            [[0,0], [0,1]],                // 1x2 Horizontal
+            [[0,0], [1,0]],                // 2x1 Vertikal
+            [[0,0]]                        // 1x1 Titik
         ];
 
         function createBoard() {
             board.innerHTML = '';
-            grid = Array(gridSize * gridSize).fill(0);
+            grid = Array(totalCells).fill(0);
             blocksPlaced = 0;
             updateScore();
-            for (let i = 0; i < gridSize * gridSize; i++) {
+            for (let i = 0; i < totalCells; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
                 cell.dataset.index = i;
                 board.appendChild(cell);
             }
-            levelEl.innerText = `puzzle - ${currentPhotoIndex + 1}`;
+            levelEl.innerText = `Puzzle ${currentPhotoIndex + 1}`;
         }
 
         function spawnPieces() {
@@ -457,14 +480,19 @@
                 const container = document.getElementById(id);
                 if (container.innerHTML === "") {
                     
-                    let allowedShapes = shapes;
-                    if (blocksPlaced >= 50) {
-                        allowedShapes = [[[0,0]]]; 
-                    } else if (blocksPlaced >= 35) {
-                        allowedShapes = shapes.filter(s => s.length <= 2); 
+                    // --- LOGIKA AUTO-WIN (80%) ---
+                    let shape;
+                    const progress = blocksPlaced / totalCells;
+                    
+                    if (progress >= 0.8) {
+                        // Jika sudah 80% atau lebih, PAKSA hanya keluar blok 1x1
+                        shape = [[0, 0]]; 
+                    } else {
+                        // Jika di bawah 80%, random seperti biasa dari easyShapes
+                        shape = easyShapes[Math.floor(Math.random() * easyShapes.length)];
                     }
+                    // -----------------------------
 
-                    const shape = allowedShapes[Math.floor(Math.random() * allowedShapes.length)];
                     const piece = document.createElement('div');
                     piece.classList.add('block-piece');
                     
@@ -490,9 +518,7 @@
         }
 
         function addDragListeners(piece, container) {
-            let active = false;
-            let initialX, initialY;
-            let currentX = 0, currentY = 0;
+            let active = false, initialX, initialY, currentX = 0, currentY = 0;
 
             piece.addEventListener('touchstart', dragStart, {passive: false});
             piece.addEventListener('mousedown', dragStart);
@@ -503,6 +529,7 @@
                 if (!isMusicStarted) {
                     isMusicStarted = true;
                     bgm.play().catch(()=>{});
+                    updatePlayerUI();
                 }
                 if (audioCtx.state === 'suspended') audioCtx.resume();
 
@@ -534,12 +561,11 @@
             function dragEnd() {
                 if (!active) return;
                 active = false;
-
                 piece.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(1)`;
 
                 const pieceRect = piece.getBoundingClientRect();
-                const anchorX = pieceRect.left + 12;
-                const anchorY = pieceRect.top + 12; 
+                const anchorX = pieceRect.left + 11;
+                const anchorY = pieceRect.top + 11; 
 
                 const boardRect = board.getBoundingClientRect();
                 const padding = 4;
@@ -552,31 +578,48 @@
                 const isOverBoard = (anchorX > boardRect.left && anchorX < boardRect.right && 
                                      anchorY > boardRect.top && anchorY < boardRect.bottom);
 
-                if (isOverBoard && tryPlace(shape, row, col)) {
+                let placed = false;
+
+                if (isOverBoard) {
+                    // Coba tempatkan langsung di posisi yang dijatuhkan
+                    if (tryPlace(shape, row, col)) {
+                        placed = true;
+                    } else {
+                        // FITUR PERMUDAH: Auto-Snap ke posisi kosong terdekat
+                        const offsets = [
+                            [0, 1], [0, -1], [1, 0], [-1, 0], 
+                            [1, 1], [-1, -1], [1, -1], [-1, 1]
+                        ];
+                        for (let offset of offsets) {
+                            if (tryPlace(shape, row + offset[0], col + offset[1])) {
+                                placed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (placed) {
                     sfx.place();
                     container.innerHTML = "";
                     
-                    if (blocksPlaced === gridSize * gridSize) {
-                        // Level selesai ditangani di dalam tryPlace
+                    if (blocksPlaced === totalCells) {
+                        // Selesai
                     } else if (isSpawnEmpty()) {
                         spawnPieces();
                     } else {
                         checkGameOver();
                     }
                 } else {
-                    resetPiece();
+                    currentX = 0; currentY = 0;
+                    piece.style.transform = "translate3d(0,0,0) scale(1)";
+                    piece.style.zIndex = "10";
                 }
 
                 document.removeEventListener('mousemove', drag);
                 document.removeEventListener('touchmove', drag);
                 document.removeEventListener('mouseup', dragEnd);
                 document.removeEventListener('touchend', dragEnd);
-            }
-
-            function resetPiece() {
-                currentX = 0; currentY = 0;
-                piece.style.transform = "translate3d(0,0,0) scale(1)";
-                piece.style.zIndex = "10";
             }
         }
 
@@ -603,21 +646,17 @@
 
             updateScore();
             
-            // --- LOGIKA SAAT MENANG ---
-            if (blocksPlaced === gridSize * gridSize) {
+            if (blocksPlaced === totalCells) {
                 sfx.win();
-                shootConfetti(); // Munculkan hujan love pink
-                
-                // Set gambar polaroid ke foto yang baru saja selesai disusun
+                shootConfetti(); 
                 document.getElementById('polaroid-img').src = photoUrls[currentPhotoIndex];
-                
                 setTimeout(() => document.getElementById('level-complete').style.display = 'flex', 500);
             }
             return true;
         }
 
         function updateScore() {
-            scoreEl.innerText = Math.floor((blocksPlaced / 64) * 100) + '%';
+            scoreEl.innerText = Math.floor((blocksPlaced / totalCells) * 100) + '%';
         }
 
         function isSpawnEmpty() {
@@ -625,7 +664,7 @@
         }
 
         function checkGameOver() {
-            if (blocksPlaced === gridSize * gridSize) return;
+            if (blocksPlaced === totalCells) return;
 
             const containers = ['p1', 'p2', 'p3'];
             let canPlaceAny = false;
@@ -636,7 +675,7 @@
                 if (container.children.length > 0) {
                     hasPieces = true;
                     const shape = JSON.parse(container.children[0].dataset.shape);
-                    for (let i = 0; i < gridSize * gridSize; i++) {
+                    for (let i = 0; i < totalCells; i++) {
                         if (isValidPlacement(shape, Math.floor(i/gridSize), i%gridSize)) {
                             canPlaceAny = true;
                         }
@@ -668,12 +707,7 @@
         function restartGame() {
             document.getElementById('game-over').style.display = 'none';
             currentPhotoIndex = 0;
-            
-            const containers = ['p1', 'p2', 'p3'];
-            containers.forEach(id => {
-                document.getElementById(id).innerHTML = "";
-            });
-            
+            ['p1', 'p2', 'p3'].forEach(id => document.getElementById(id).innerHTML = "");
             createBoard();
             spawnPieces();
         }

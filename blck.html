@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title> puzzle</title>
+    <style>
+        :root {
+            --soft-pink-bg: #fff0f5;
+            --soft-pink-light: #ffe4e1;
+            --soft-pink-main: #ffb6c1;
+            --soft-pink-dark: #ff69b4;
+            --text-color: #d87093;
+            --board-shadow: rgba(255, 182, 193, 0.5);
+            --grid-line: rgba(255, 255, 255, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--soft-pink-bg) 0%, var(--soft-pink-main) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        /* --- STYLING BARIS ATAS (SKOR - JUDUL - PLAYLIST) --- */
+        #top-bar {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 95vw;
+            max-width: 400px;
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .top-section {
+            flex: 1;
+            display: flex;
+        }
+        
+        .top-left { justify-content: flex-start; }
+        .top-center { justify-content: center; align-items: center; }
+        .top-right { justify-content: flex-end; }
+
+        #score-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 15px;
+            border-radius: 15px;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px var(--board-shadow);
+        }
+
+        #level-board {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+
+        #music-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px var(--board-shadow);
+        }
+
+        .music-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        #music-player button {
+            background: var(--soft-pink-dark);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        
+        #music-player button:active {
+            transform: scale(0.9);
+        }
+
+        #track-name {
+            font-size: 0.65rem;
+            max-width: 60px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 3px;
+            color: var(--soft-pink-dark);
+            font-weight: bold;
+        }
+        /* ----------------------------------- */
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            background: var(--grid-line);
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--board-shadow);
+            width: 90vw;
+            max-width: 380px;
+            height: 90vw;
+            max-height: 380px;
+            border: 4px solid white;
+            gap: 1px;
+            position: relative;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.4);
+            position: relative;
+        }
+
+        .cell.filled {
+            background-size: 800% 800%;
+            animation: popIn 0.3s ease-out;
+            border: none;
+        }
+
+        #spawn-area {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 25px;
+            height: 100px;
+        }
+
+        .piece-container {
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .block-piece {
+            display: grid;
+            gap: 1px;
+            position: relative;
+            cursor: grab;
+            touch-action: none;
+            z-index: 10;
+        }
+
+        .block-unit {
+            width: 22px;
+            height: 22px;
+            background-color: var(--soft-pink-dark);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 182, 193, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .overlay h1 { font-size: 2.5rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        
+        .overlay button.main-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 30px;
+            background: white;
+            color: var(--soft-pink-dark);
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            z-index: 2002;
+        }
+        .overlay button.main-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- STYLING POLAROID BESAR DI LAYAR KEMENANGAN --- */
+        #polaroid-card {
+            background: white;
+            padding: 15px 15px 50px 15px; 
+            border-radius: 6px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transform: rotate(-3deg);
+            max-width: 85vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2001;
+        }
+
+        #polaroid-img {
+            width: 100%;
+            max-width: 320px; /* Ukuran gambar diperbesar */
+            height: auto;
+            border: 1px solid #eee;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+
+        #polaroid-caption {
+            color: #444;
+            font-family: 'Segoe Print', 'Bradley Hand', cursive, sans-serif;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 15px;
+            transform: rotate(2deg);
+        }
+        /* ------------------------ */
+
+        /* --- EFEK CONFETTI LOVE PINK --- */
+        .heart-confetti {
+            position: fixed;
+            top: -10vh;
+            font-family: Arial, sans-serif;
+            pointer-events: none;
+            z-index: 2000;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg) scale(0.5); opacity: 0; }
+        }
+        /* ------------------------ */
+    </style>
+</head>
+<body>
+
+    <audio id="bgm"></audio>
+
+    <div id="top-bar">
+        <div class="top-section top-left">
+            <div id="score-board">0%</div>
+        </div>
+        
+        <div class="top-section top-center">
+            <div id="level-board">puzzle ke-1</div>
+        </div>
+
+        <div class="top-section top-right">
+            <div id="music-player">
+                <div class="music-btns">
+                    <button onclick="prevTrack()">&#9664;</button>
+                    <button onclick="nextTrack()">&#9654;</button>
+                </div>
+                <div id="track-name">Memuat...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-board"></div>
+
+    <div id="spawn-area">
+        <div class="piece-container" id="p1"></div>
+        <div class="piece-container" id="p2"></div>
+        <div class="piece-container" id="p3"></div>
+    </div>
+
+    <div id="level-complete" class="overlay">
+        <h1>PUZZLE SELESAI!</h1>
+        
+        <div id="polaroid-card">
+            <img id="polaroid-img" src="" alt="Hasil Foto">
+            <div id="polaroid-caption">Perfect!</div>
+        </div>
+
+        <button class="main-btn" onclick="nextLevel()">LANJUT FOTO BERIKUTNYA</button>
+    </div>
+
+    <div id="game-over" class="overlay">
+        <h1>JALAN BUNTU!</h1>
+        <p>Tidak ada blok yang muat lagi.</p>
+        <button class="main-btn" onclick="restartGame()">ULANG DARI AWAL</button>
+    </div>
+
+    <script>
+        // --- SISTEM AUDIO & PLAYLIST ---
+        const bgm = document.getElementById('bgm');
+        bgm.volume = 0.4;
+        
+        // ---> GANTI LAGU ANDA DI SINI <---
+        const playlist = [
+            { name: "bersenja gurau", url: "senja.mp3" }
+        ];
+        
+        let currentTrack = 0;
+        let isMusicStarted = false;
+        const trackNameEl = document.getElementById('track-name');
+
+        function loadTrack(index) {
+            bgm.src = playlist[index].url;
+            trackNameEl.innerText = playlist[index].name;
+            if (isMusicStarted) {
+                bgm.play().catch(e => console.log("Audio tertahan browser"));
+            }
+        }
+
+        function nextTrack() {
+            currentTrack = (currentTrack + 1) % playlist.length;
+            isMusicStarted = true;
+            loadTrack(currentTrack);
+        }
+
+        function prevTrack() {
+            currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+            isMusicStarted = true;
+            loadTrack(currentTrack);
+        }
+
+        bgm.addEventListener('ended', nextTrack);
+        loadTrack(0); 
+
+        // SFX Bawaan (Synthesizer)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const sfx = {
+            place: () => playTone(400, 'sine', 0.1, 0.1),
+            error: () => playTone(150, 'sawtooth', 0.3, 0.1),
+            win: () => { 
+                playTone(523.25, 'sine', 0.1); 
+                setTimeout(() => playTone(659.25, 'sine', 0.1), 100); 
+                setTimeout(() => playTone(783.99, 'sine', 0.4), 200); 
+            }
+        };
+
+        // --- FUNGSI ANIMASI CONFETTI LOVE ---
+        function shootConfetti() {
+            const colors = ['#ffb6c1', '#ff69b4', '#ff1493', '#d87093', '#ffffff'];
+            for (let i = 0; i < 70; i++) {
+                const heart = document.createElement('div');
+                heart.innerHTML = '❤';
+                heart.className = 'heart-confetti';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                heart.style.animationDelay = (Math.random() * 0.5) + 's';
+                document.body.appendChild(heart);
+                
+                // Hapus DOM setelah animasi selesai agar tidak memberatkan browser
+                setTimeout(() => heart.remove(), 5000);
+            }
+        }
+        // ------------------------------------
+
+        const board = document.getElementById('game-board');
+        const scoreEl = document.getElementById('score-board');
+        const levelEl = document.getElementById('level-board');
+        const gridSize = 8;
+        let grid = Array(gridSize * gridSize).fill(0);
+        
+        const photoUrls = [
+            '1.jpg',
+            '2.jpg',
+            '3.jpg',
+            '4.jpg',
+            '5.jpg'
+        ];
+        let currentPhotoIndex = 0;
+        let blocksPlaced = 0;
+
+        const shapes = [
+            [[0,0], [0,1], [1,0], [1,1]], // 2x2
+            [[0,0], [0,1], [0,2]],         // 3 Horiz
+            [[0,0], [1,0], [2,0]],         // 3 Vert
+            [[0,0], [1,0], [1,1]],         // L kecil
+            [[0,0], [0,1]],                // 2 Horiz
+            [[0,0], [1,0]],                // 2 Vert
+            [[0,0]]                        // 1 dot
+        ];
+
+        function createBoard() {
+            board.innerHTML = '';
+            grid = Array(gridSize * gridSize).fill(0);
+            blocksPlaced = 0;
+            updateScore();
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                board.appendChild(cell);
+            }
+            levelEl.innerText = `puzzle - ${currentPhotoIndex + 1}`;
+        }
+
+        function spawnPieces() {
+            const containers = ['p1', 'p2', 'p3'];
+            containers.forEach(id => {
+                const container = document.getElementById(id);
+                if (container.innerHTML === "") {
+                    
+                    let allowedShapes = shapes;
+                    if (blocksPlaced >= 50) {
+                        allowedShapes = [[[0,0]]]; 
+                    } else if (blocksPlaced >= 35) {
+                        allowedShapes = shapes.filter(s => s.length <= 2); 
+                    }
+
+                    const shape = allowedShapes[Math.floor(Math.random() * allowedShapes.length)];
+                    const piece = document.createElement('div');
+                    piece.classList.add('block-piece');
+                    
+                    const rows = Math.max(...shape.map(p => p[0])) + 1;
+                    const cols = Math.max(...shape.map(p => p[1])) + 1;
+                    piece.style.gridTemplateRows = `repeat(${rows}, 22px)`;
+                    piece.style.gridTemplateColumns = `repeat(${cols}, 22px)`;
+
+                    shape.forEach(pos => {
+                        const unit = document.createElement('div');
+                        unit.classList.add('block-unit');
+                        unit.style.gridRowStart = pos[0] + 1;
+                        unit.style.gridColumnStart = pos[1] + 1;
+                        piece.appendChild(unit);
+                    });
+
+                    piece.dataset.shape = JSON.stringify(shape);
+                    addDragListeners(piece, container);
+                    container.appendChild(piece);
+                }
+            });
+            setTimeout(checkGameOver, 200);
+        }
+
+        function addDragListeners(piece, container) {
+            let active = false;
+            let initialX, initialY;
+            let currentX = 0, currentY = 0;
+
+            piece.addEventListener('touchstart', dragStart, {passive: false});
+            piece.addEventListener('mousedown', dragStart);
+
+            function dragStart(e) {
+                if(e.cancelable) e.preventDefault();
+
+                if (!isMusicStarted) {
+                    isMusicStarted = true;
+                    bgm.play().catch(()=>{});
+                }
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const clientX = e.type === "touchstart" ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
+                
+                initialX = clientX - currentX;
+                initialY = clientY - currentY;
+                active = true;
+                piece.style.zIndex = "1000";
+
+                document.addEventListener('mousemove', drag, {passive: false});
+                document.addEventListener('touchmove', drag, {passive: false});
+                document.addEventListener('mouseup', dragEnd);
+                document.addEventListener('touchend', dragEnd);
+            }
+
+            function drag(e) {
+                if (!active) return;
+                e.preventDefault();
+                const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+                
+                currentX = clientX - initialX;
+                currentY = clientY - initialY;
+                piece.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(1.1)`;
+            }
+
+            function dragEnd() {
+                if (!active) return;
+                active = false;
+
+                piece.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(1)`;
+
+                const pieceRect = piece.getBoundingClientRect();
+                const anchorX = pieceRect.left + 12;
+                const anchorY = pieceRect.top + 12; 
+
+                const boardRect = board.getBoundingClientRect();
+                const padding = 4;
+                const cellSize = (boardRect.width - (padding * 2)) / gridSize;
+
+                const col = Math.floor((anchorX - boardRect.left - padding) / cellSize);
+                const row = Math.floor((anchorY - boardRect.top - padding) / cellSize);
+
+                const shape = JSON.parse(piece.dataset.shape);
+                const isOverBoard = (anchorX > boardRect.left && anchorX < boardRect.right && 
+                                     anchorY > boardRect.top && anchorY < boardRect.bottom);
+
+                if (isOverBoard && tryPlace(shape, row, col)) {
+                    sfx.place();
+                    container.innerHTML = "";
+                    
+                    if (blocksPlaced === gridSize * gridSize) {
+                        // Level selesai ditangani di dalam tryPlace
+                    } else if (isSpawnEmpty()) {
+                        spawnPieces();
+                    } else {
+                        checkGameOver();
+                    }
+                } else {
+                    resetPiece();
+                }
+
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('touchmove', drag);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchend', dragEnd);
+            }
+
+            function resetPiece() {
+                currentX = 0; currentY = 0;
+                piece.style.transform = "translate3d(0,0,0) scale(1)";
+                piece.style.zIndex = "10";
+            }
+        }
+
+        function tryPlace(shape, r, c) {
+            for (let pos of shape) {
+                const targetR = r + pos[0];
+                const targetC = c + pos[1];
+                if (targetR < 0 || targetR >= gridSize || targetC < 0 || targetC >= gridSize) return false;
+                if (grid[targetR * gridSize + targetC] !== 0) return false;
+            }
+
+            shape.forEach(pos => {
+                const targetR = r + pos[0];
+                const targetC = c + pos[1];
+                const idx = targetR * gridSize + targetC;
+                grid[idx] = 1;
+                blocksPlaced++;
+
+                const cell = board.children[idx];
+                cell.classList.add('filled');
+                cell.style.backgroundImage = `url('${photoUrls[currentPhotoIndex]}')`;
+                cell.style.backgroundPosition = `${(targetC / (gridSize - 1)) * 100}% ${(targetR / (gridSize - 1)) * 100}%`;
+            });
+
+            updateScore();
+            
+            // --- LOGIKA SAAT MENANG ---
+            if (blocksPlaced === gridSize * gridSize) {
+                sfx.win();
+                shootConfetti(); // Munculkan hujan love pink
+                
+                // Set gambar polaroid ke foto yang baru saja selesai disusun
+                document.getElementById('polaroid-img').src = photoUrls[currentPhotoIndex];
+                
+                setTimeout(() => document.getElementById('level-complete').style.display = 'flex', 500);
+            }
+            return true;
+        }
+
+        function updateScore() {
+            scoreEl.innerText = Math.floor((blocksPlaced / 64) * 100) + '%';
+        }
+
+        function isSpawnEmpty() {
+            return ['p1', 'p2', 'p3'].every(id => document.getElementById(id).innerHTML === "");
+        }
+
+        function checkGameOver() {
+            if (blocksPlaced === gridSize * gridSize) return;
+
+            const containers = ['p1', 'p2', 'p3'];
+            let canPlaceAny = false;
+            let hasPieces = false;
+
+            containers.forEach(id => {
+                const container = document.getElementById(id);
+                if (container.children.length > 0) {
+                    hasPieces = true;
+                    const shape = JSON.parse(container.children[0].dataset.shape);
+                    for (let i = 0; i < gridSize * gridSize; i++) {
+                        if (isValidPlacement(shape, Math.floor(i/gridSize), i%gridSize)) {
+                            canPlaceAny = true;
+                        }
+                    }
+                }
+            });
+
+            if (hasPieces && !canPlaceAny) {
+                sfx.error();
+                document.getElementById('game-over').style.display = 'flex';
+            }
+        }
+
+        function isValidPlacement(shape, r, c) {
+            for (let pos of shape) {
+                const tr = r + pos[0], tc = c + pos[1];
+                if (tr < 0 || tr >= gridSize || tc < 0 || tc >= gridSize || grid[tr * gridSize + tc] !== 0) return false;
+            }
+            return true;
+        }
+
+        function nextLevel() {
+            document.getElementById('level-complete').style.display = 'none';
+            currentPhotoIndex = (currentPhotoIndex + 1) % photoUrls.length;
+            createBoard();
+            spawnPieces();
+        }
+
+        function restartGame() {
+            document.getElementById('game-over').style.display = 'none';
+            currentPhotoIndex = 0;
+            
+            const containers = ['p1', 'p2', 'p3'];
+            containers.forEach(id => {
+                document.getElementById(id).innerHTML = "";
+            });
+            
+            createBoard();
+            spawnPieces();
+        }
+
+        createBoard();
+        spawnPieces();
+    </script>
+</body>
+</html>
